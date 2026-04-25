@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-test-scan:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -16,32 +16,46 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Dependency vulnerability scan
-        uses: pyupio/safety-action@v1
+      - name: Lint code
+        run: |
+          pip install flake8
+          flake8 .
+
+      - name: Run tests
+        run: |
+          pip install pytest
+          pytest --maxfail=1 --disable-warnings -q
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          args: --full-report
+          python-version: "3.11"
 
-      - name: Run unit tests
-        run: pytest -v --maxfail=1 --disable-warnings
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Build Docker image
-        run: docker build -t secure-app .
+      - name: Run Bandit (security linter)
+        run: |
+          pip install bandit
+          bandit -r .
 
-      - name: Container image vulnerability scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "secure-app"
-          vuln-type: "os,library"
-          ignore-unfixed: true
-          format: "table"
-
-      - name: Deploy (simulated)
-        run: echo "Deployment successful! Container pushed to registry."
-
+      - name: Run Safety (dependency vulnerability check)
+        run: |
+          pip install safety
+          safety check --full-report
