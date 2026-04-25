@@ -1,7 +1,7 @@
 import pytest
 from app.main import app
 @pytest.fixture
-def client():
+def test_my_function():
 app.config['TESTING'] = True
 with app.test_client() as client:
 yield client
