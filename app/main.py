@@ -8,7 +8,7 @@ app = Flask(__name__)
 def health():
 return jsonify({'status': 'healthy'}), 200
 @app.route('/api/items', methods=['GET'])
-def get_items():
+def my_function():
 items = [
 {'id': 1, 'name': 'Widget A'},
 {'id': 2, 'name': 'Widget B'},
