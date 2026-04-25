@@ -1,23 +1,17 @@
-# Use a modern, minimal, secure base image
-FROM python:3.12-slim AS base
-
-# Ensure no cache and install securely
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-
-WORKDIR /usr/src/app
-
+FROM python:3.11-slim
+WORKDIR /app
+# Create non-root user — never run containers as root
+RUN addgroup --system appgroup \
+&& adduser --system --ingroup appgroup appuser
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-
-COPY app ./app
-COPY tests ./tests
-
-# Non-root user for security
-RUN useradd -m secureuser
-USER secureuser
-
-EXPOSE 8080
-CMD ["python", "-m", "app.main"]
-
+&& pip install --no-cache-dir -r requirements.txt
+COPY app/ ./app/
+RUN chown -R appuser:appgroup /app
+USER appuser
+ENV PYTHONDONTWRITEBYTECODE=1 \
+PYTHONUNBUFFERED=1 \
+PORT=5000
+EXPOSE 5000
+CMD ["python", "-m", "flask", "--app", "app.main",
+"run", "--host=0.0.0.0", "--port=5000"]
