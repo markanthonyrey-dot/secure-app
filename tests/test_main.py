@@ -9,11 +9,12 @@ def test_health_returns_200(client):
 response = client.get('/health')
 assert response.status_code == 200
 assert response.get_json() == {'status': 'healthy'}
-def test_get_items_returns_list(client):
-response = client.get('/api/items')
+def test_get_items(client):
+response = client.get("/api/items")
 assert response.status_code == 200
 data = response.get_json()
-assert 'items' in data
+assert "items" in data
+assert isinstance(data["items"], list)
 assert isinstance(data['items'], list)
 def test_create_item_success(client):
 response = client.post('/api/items',
