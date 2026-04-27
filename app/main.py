@@ -16,6 +16,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 # Security: Health check endpoint for container orchestration
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -25,6 +26,7 @@ def health_check():
         'timestamp': datetime.utcnow().isoformat(),
         'service': 'secure-app'
     }), 200
+
 
 # Security: Input validation and safe error handling
 @app.route('/api/greet', methods=['POST'])
@@ -55,6 +57,7 @@ def greet():
         # Security: Never expose internal error details to client
         logger.error(f'Error processing request: {str(e)}')
         return jsonify({'error': 'Internal server error'}), 500
+
 
 # Security: Safe math operation with validation
 @app.route('/api/add', methods=['POST'])
@@ -87,15 +90,18 @@ def add_numbers():
         logger.error(f'Error in calculation: {str(e)}')
         return jsonify({'error': 'Internal server error'}), 500
 
+
 # Security: 404 handler to prevent information leakage
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'error': 'Resource not found'}), 404
 
+
 # Security: 500 handler
 @app.errorhandler(500)
 def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
+
 
 if __name__ == '__main__':
     # Security: Bind to localhost in development, configurable in production
